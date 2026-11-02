@@ -365,7 +365,7 @@ html.js.motore-ko #nomotore{display:block}
 <div class="card"><h3>Limiti per questo paziente</h3><ul class="lista" id="limiti"></ul></div>
 
 <div class="foot">
-  <strong>Fonte.</strong> Zeppenfeld K, Tfelt-Hansen J, de Riva M, et al. 2022 ESC Guidelines for the management of patients with ventricular arrhythmias and the prevention of sudden cardiac death. <em>Eur Heart J</em> 2022;43:3997–4126, doi:10.1093/eurheartj/ehac262 — extrasistoli e TV idiopatiche (§ 7.1.2.1, p. 4050; Fig. 17 e Tab. 9, p. 4051; Rec. Table 26, p. 4052), cardiomiopatia indotta o aggravata dalle extrasistoli (§ 7.1.2.2, pp. 4052–4053; Fig. 18, p. 4053; Rec. Table 27, pp. 4053–4054), antiaritmici, dosi e controindicazioni (Tab. 8, pp. 4035–4037), gravidanza (Rec. Table 47, p. 4088). Metoprololo: consensus EHRA 2024 sulla tempesta elettrica, Tab. 11, p. 25. Soglia del 50% fra FEVS conservata e ridotta: 2026 ESC Guidelines for the management of heart failure, p. 16 (scheda 08). <strong>Schede tecniche</strong>, come nel prontuario del capitolo: Inderal 40 mg (AIFA, resa disponibile il 21/03/2023), Nadololo Cheplapharm 80 mg (AIFA, febbraio 2023), Seloken (AIFA, resa disponibile il 28/08/2026), Isoptin (AIFA, resa disponibile il 05/10/2023), Dilzene (AIFA, resa disponibile l'11/01/2023), Almarytm (AIFA, resa disponibile il 12/11/2025), Cordarone (AIFA, resa disponibile l'08/09/2022). Ogni numero mostrato porta la sua fonte.<br><br>
+  <strong>Fonte.</strong> Zeppenfeld K, Tfelt-Hansen J, de Riva M, et al. 2022 ESC Guidelines for the management of patients with ventricular arrhythmias and the prevention of sudden cardiac death. <em>Eur Heart J</em> 2022;43:3997–4126, doi:10.1093/eurheartj/ehac262 — extrasistoli e TV idiopatiche (§ 7.1.2.1, p. 4050; Fig. 17 e Tab. 9, p. 4051; Rec. Table 26, p. 4052), cardiomiopatia indotta o aggravata dalle extrasistoli (§ 7.1.2.2, pp. 4052–4053; Fig. 18, p. 4053; Rec. Table 27, pp. 4053–4054), antiaritmici, dosi e controindicazioni (Tab. 8, pp. 4035–4037), gravidanza (Rec. Table 47, p. 4088). Metoprololo: consensus EHRA 2024 sulla tempesta elettrica, Tab. 11, p. 25. Soglia del 50% fra FEVS conservata e ridotta: 2026 ESC Guidelines for the management of heart failure, p. 16 (scheda 08). <strong>Schede tecniche</strong>, come nel prontuario del capitolo: propranololo 40 mg (AIFA, resa disponibile il 21/03/2023), nadololo 80 mg (AIFA, febbraio 2023), metoprololo (AIFA, resa disponibile il 28/08/2026), verapamil (AIFA, resa disponibile il 05/10/2023), diltiazem (AIFA, resa disponibile l'11/01/2023), flecainide (AIFA, resa disponibile il 12/11/2025), amiodarone (AIFA, resa disponibile l'08/09/2022). Ogni numero mostrato porta la sua fonte.<br><br>
   Strumento personale di studio e consultazione: <strong>non sostituisce il giudizio clinico né la scheda tecnica del farmaco</strong>. Non salva i dati e non li invia in rete.
 </div>
 </div>
@@ -435,12 +435,12 @@ html.js.motore-ko #nomotore{display:block}
        mL/min/1,73 m2 controindicata), amiodarone carico 600-1200 mg/24 h per
        8-10 giorni poi 200-400 mg/die. EHRA 2024, Tab. 11, p. 25: metoprololo
        25-400 mg/die. Rene dalle schede tecniche, come nel prontuario del
-       capitolo: Inderal 4.3 «insufficienza renale» senza grado; Nadololo
-       Cheplapharm, ClCr (mL/min/1,73 m2) >50 ogni 24 h, 31-50 ogni 24-36 h,
+       capitolo: propranololo 4.3 «insufficienza renale» senza grado; nadololo,
+       ClCr (mL/min/1,73 m2) >50 ogni 24 h, 31-50 ogni 24-36 h,
        10-30 ogni 24-48 h, <10 ogni 40-60 h, e da evitare nelle forme gravi;
        in dialisi nessun intervallo (4.9: l'emodialisi lo rimuove);
-       Seloken 4.2 nessun aggiustamento, 4.3 insufficienza renale grave
-       controindicata senza soglia; Isoptin cautela senza soglia; Cordarone 5.2
+       metoprololo 4.2 nessun aggiustamento, 4.3 insufficienza renale grave
+       controindicata senza soglia; verapamil cautela senza soglia; amiodarone 5.2
        nessun aggiustamento.
      ESC 2026 scompenso, p. 16 — FEVS conservata dal 50%. */
   var SOGLIE = { fe:50, c10:10, c20:20, flec:35, nad:[50, 30, 10], bmiAgg:30, umol:88.4, adulto:18, ablEta:5, ablPeso:10, verEta:1 };
@@ -458,10 +458,10 @@ html.js.motore-ko #nomotore{display:block}
   function nf(x, d) { if (d === 0) x = Math.round(x); else x = r1(x); return String(x).replace(".", ","); }
   function pgs(p) { return ' <span class="pg">' + p + "</span>"; }
   function corPill(c, l) { if (!c) return ""; var k = { "I":"c1", "IIa":"c2a", "IIb":"c2b", "III":"c3" }[c]; return '<span class="cor ' + k + '">' + c + "</span>" + (l ? ' <span class="cor ' + k + '" style="opacity:.85">' + l + "</span>" : ""); }
-  function st(nome, sez) { return ' <span class="pg">scheda tecnica (' + nome + ", " + sez + ")</span>"; }
+  function st(nome, sez) { return ' <span class="pg">scheda tecnica di ' + nome + ", " + sez + "</span>"; }
   function dv(x) { return ' <span class="dv">DA VERIFICARE</span>' + (x ? " " + x : ""); }
   // Nadololo in dialisi: la stessa frase, con la stessa fonte, del Tool QT lungo.
-  var NAD_DIALISI = "In dialisi il nadololo è <b>con riserva</b>: la scheda tecnica dà l'intervallo fra le dosi solo per fasce di clearance e per la dialisi non ne dà uno, dice soltanto che l'emodialisi lo rimuove; nessuna fascia proposta" + st("Nadololo Cheplapharm", "4.2, 4.9") + dv() + ".";
+  var NAD_DIALISI = "In dialisi il nadololo è <b>con riserva</b>: la scheda tecnica dà l'intervallo fra le dosi solo per fasce di clearance e per la dialisi non ne dà uno, dice soltanto che l'emodialisi lo rimuove; nessuna fascia proposta" + st("nadololo", "4.2, 4.9") + dv() + ".";
 
   /* ═══ FUNZIONI DI CALCOLO (pure) ══════════════════════════════════════ */
   function creatMg(s) {
@@ -713,7 +713,7 @@ html.js.motore-ko #nomotore{display:block}
       if (!adulto(s)) h += passo("<b>Dose</b>: le dosi della fonte sono dell'adulto; sotto i 18 anni" + dv("— nessuna fonte del capitolo dà la dose pediatrica") + ".");
       else {
         if (k === "bb") h += passo("<b>Dose orale</b>: propranololo <b>" + DOSI.prop + "</b>" + pgs(T8a) + " · nadololo <b>" + DOSI.nad + "</b>" + pgs(T8a) + " · metoprololo <b>" + DOSI.meto + "</b>" + pgs(EH11 + ", integrazione: la Tab. 8 scrive «vari»") + ". Il nadololo in Italia è in carenza dal 23/06/2026" + pgs("prontuario del capitolo") + ".", stato === "ok");
-        if (k === "ccb") h += passo("<b>Dose orale</b>: verapamil <b>" + DOSI.vera + "</b>" + pgs(T8v) + ". Diltiazem: né la fonte né il prontuario danno una dose per le aritmie ventricolari" + dv() + "; in Italia per os ha solo angina e ipertensione" + st("Dilzene", "4.1") + ".", stato === "ok");
+        if (k === "ccb") h += passo("<b>Dose orale</b>: verapamil <b>" + DOSI.vera + "</b>" + pgs(T8v) + ". Diltiazem: né la fonte né il prontuario danno una dose per le aritmie ventricolari" + dv() + "; in Italia per os ha solo angina e ipertensione" + st("diltiazem", "4.1") + ".", stato === "ok");
         if (k === "flec") h += passo("<b>Dose orale</b>: <b>" + DOSI.flec + "</b>" + pgs(T8f) + ".", stato === "ok");
         if (k === "amio") h += passo("<b>Dose orale</b>: carico <b>" + DOSI.amioCarico + "</b>, poi <b>" + DOSI.amio + "</b>" + pgs(T8a) + ".", stato === "ok");
       }
@@ -728,19 +728,19 @@ html.js.motore-ko #nomotore{display:block}
     if (cl.bambino) return "sotto i 18 anni Cockcroft-Gault non vale e lo strumento non stima la clearance" + dv() + ".";
     if (k === "bb") {
       var nf_ = nadFascia(rn.crcl, rn.dialisi), tx;
-      tx = "nadololo, intervallo per clearance (la scheda scrive mL/min/1,73 m²): &gt;50 ogni 24 h · 31–50 ogni 24–36 h · 10–30 ogni 24–48 h · &lt;10 ogni 40–60 h; da evitare nelle forme gravi" + st("Nadololo Cheplapharm", "4.2, 4.4") + dv("che cosa sia «grave»") + ". ";
+      tx = "nadololo, intervallo per clearance (la scheda scrive mL/min/1,73 m²): &gt;50 ogni 24 h · 31–50 ogni 24–36 h · 10–30 ogni 24–48 h · &lt;10 ogni 40–60 h; da evitare nelle forme gravi" + st("nadololo", "4.2, 4.4") + dv("che cosa sia «grave»") + ". ";
       if (rn.dialisi) tx += NAD_DIALISI + " ";
       else if (nf_ !== null) tx += "<b>Qui: " + NAD_INT[nf_] + "</b> (ClCr " + nf(rn.crcl) + "). ";
       else tx += '<span class="muted">— serve la clearance</span>. ';
-      tx += "Propranololo: l'«insufficienza renale» è fra le controindicazioni, senza grado; dose iniziale con cautela" + st("Inderal", "4.2–4.4") + dv("da quale grado vale il divieto") + ". Metoprololo: nessun aggiustamento, ma «insufficienza renale grave» fra le controindicazioni, senza soglia" + st("Seloken", "4.2–4.3") + dv() + ".";
+      tx += "Propranololo: l'«insufficienza renale» è fra le controindicazioni, senza grado; dose iniziale con cautela" + st("propranololo", "4.2–4.4") + dv("da quale grado vale il divieto") + ". Metoprololo: nessun aggiustamento, ma «insufficienza renale grave» fra le controindicazioni, senza soglia" + st("metoprololo", "4.2–4.3") + dv() + ".";
       return tx;
     }
-    if (k === "ccb") return "verapamil: cautela, nessun aggiustamento né soglia" + st("Isoptin", "4.4") + "; diltiazem: la dose iniziale si riduce, senza soglia di clearance" + st("Dilzene", "4.2") + ".";
+    if (k === "ccb") return "verapamil: cautela, nessun aggiustamento né soglia" + st("verapamil", "4.4") + "; diltiazem: la dose iniziale si riduce, senza soglia di clearance" + st("diltiazem", "4.2") + ".";
     if (k === "flec") {
       var fr = flecRene(rn);
-      return "controindicata con CrCl &lt;35 mL/min/1,73 m²" + pgs(T8f) + "; la scheda tecnica la ammette con ClCr ≤35 da 100 mg/die con i livelli plasmatici" + st("Almarytm", "4.2") + ": vale la fonte, più prudente. Lo strumento la esclude se è sotto 35 la Cockcroft-Gault sul peso reale o l'eGFR. " + (fr.esito === "ok" ? "<b>Qui: nessuna esclusione</b> (ClCr " + nf(rn.crcl) + (rn.egfr !== null ? ", eGFR " + nf(rn.egfr, 0) : "") + ")." : (fr.esito === "manca" ? '<span class="muted">— serve la clearance</span>.' : "<b>Qui: esclusa</b>."));
+      return "controindicata con CrCl &lt;35 mL/min/1,73 m²" + pgs(T8f) + "; la scheda tecnica la ammette con ClCr ≤35 da 100 mg/die con i livelli plasmatici" + st("flecainide", "4.2") + ": vale la fonte, più prudente. Lo strumento la esclude se è sotto 35 la Cockcroft-Gault sul peso reale o l'eGFR. " + (fr.esito === "ok" ? "<b>Qui: nessuna esclusione</b> (ClCr " + nf(rn.crcl) + (rn.egfr !== null ? ", eGFR " + nf(rn.egfr, 0) : "") + ")." : (fr.esito === "manca" ? '<span class="muted">— serve la clearance</span>.' : "<b>Qui: esclusa</b>."));
     }
-    return "nessun aggiustamento: l'escrezione renale è trascurabile" + st("Cordarone", "5.2") + "; la fonte non lo dice.";
+    return "nessun aggiustamento: l'escrezione renale è trascurabile" + st("amiodarone", "5.2") + "; la fonte non lo dice.";
   }
   function avvisoAgg(rn, k) {
     var x = incroci(rn), i, chi = k === "bb" ? "nadololo" : (k === "flec" ? "flecainide" : "");
