@@ -435,15 +435,19 @@ html.js.motore-ko #nomotore{display:block}
        mL/min/1,73 m2 controindicata), amiodarone carico 600-1200 mg/24 h per
        8-10 giorni poi 200-400 mg/die. EHRA 2024, Tab. 11, p. 25: metoprololo
        25-400 mg/die. Rene dalle schede tecniche, come nel prontuario del
-       capitolo: propranololo 4.3 «insufficienza renale» senza grado; nadololo,
-       ClCr (mL/min/1,73 m2) >50 ogni 24 h, 31-50 ogni 24-36 h,
-       10-30 ogni 24-48 h, <10 ogni 40-60 h, e da evitare nelle forme gravi;
-       in dialisi nessun intervallo (4.9: l'emodialisi lo rimuove);
-       metoprololo 4.2 nessun aggiustamento, 4.3 insufficienza renale grave
-       controindicata senza soglia; verapamil cautela senza soglia; amiodarone 5.2
-       nessun aggiustamento.
+       capitolo: propranololo 4.3 «insufficienza renale» senza grado (ClCr <60,
+       lettura nostra; la 4.2 e la 4.4 chiedono solo cautela: le due frasi non si
+       accordano, nessuna dose, decide lo specialista); nadololo, ClCr
+       (mL/min/1,73 m2) >50 ogni 24 h, 31-50 ogni 24-36 h, 10-30 ogni 24-48 h,
+       <10 ogni 40-60 h, ma da evitare nelle forme gravi (ClCr <30, lettura
+       nostra: le due frasi non si accordano, nessuna dose); in dialisi nessuna
+       dose (4.9: in sovradosaggio l'emodialisi lo rimuove); metoprololo 4.2
+       nessun aggiustamento, 4.3 insufficienza renale grave controindicata (ClCr
+       <30, lettura nostra: da non dare); senza clearance la dose dei tre e' «—»
+       (regole del medico del 23-24/10 e 01/11/2026, scelte dell'11/11/2026);
+       verapamil cautela senza soglia; amiodarone 5.2 nessun aggiustamento.
      ESC 2026 scompenso, p. 16 — FEVS conservata dal 50%. */
-  var SOGLIE = { fe:50, c10:10, c20:20, flec:35, nad:[50, 30, 10], bmiAgg:30, umol:88.4, adulto:18, ablEta:5, ablPeso:10, verEta:1 };
+  var SOGLIE = { fe:50, c10:10, c20:20, flec:35, nad:[50, 31, 30], grave:30, irc:60, bmiAgg:30, umol:88.4, adulto:18, ablEta:5, ablPeso:10, verEta:1 };
   var LIM = { fe:[5, 80], carico:[0, 100] };
   var DOSI = { prop:"80–320 mg/die", nad:"40–120 mg/die", meto:"25–400 mg/die", vera:"120–480 mg/die", flec:"200–400 mg/die", amioCarico:"600–1200 mg/24 h per 8–10 giorni", amio:"200–400 mg/die" };
   var NAD_INT = ["ogni 24 h", "ogni 24–36 h", "ogni 24–48 h", "ogni 40–60 h"];
@@ -456,12 +460,24 @@ html.js.motore-ko #nomotore{display:block}
   /* ═══ FUNZIONI DI SCRITTURA (pure) ════════════════════════════════════ */
   function r1(x) { return Math.round(x * 10) / 10; }
   function nf(x, d) { if (d === 0) x = Math.round(x); else x = r1(x); return String(x).replace(".", ","); }
+  // Una clearance che l'arrotondamento porterebbe proprio su una soglia senza
+  // esserlo si scrive con i decimali che servono: «29,96», non «30» accanto a
+  // «sotto 30» (come Tool TV).
+  function nfCl(x, intero) {
+    var S = [SOGLIE.grave, SOGLIE.nad[1], SOGLIE.flec, SOGLIE.nad[0], SOGLIE.irc], a = r1(x), i, d, q;
+    if (intero) a = Math.round(x);
+    for (i = 0; i < S.length; i++) if (a === S[i] && x !== a) {
+      if (intero && r1(x) !== a) return nf(x);
+      for (d = 2; d < 8; d++) { q = Math.pow(10, d); if (Math.round(x * q) / q !== a) return String(Math.round(x * q) / q).replace(".", ","); }
+    }
+    return nf(x, intero ? 0 : undefined);
+  }
   function pgs(p) { return ' <span class="pg">' + p + "</span>"; }
   function corPill(c, l) { if (!c) return ""; var k = { "I":"c1", "IIa":"c2a", "IIb":"c2b", "III":"c3" }[c]; return '<span class="cor ' + k + '">' + c + "</span>" + (l ? ' <span class="cor ' + k + '" style="opacity:.85">' + l + "</span>" : ""); }
   function st(nome, sez) { return ' <span class="pg">scheda tecnica di ' + nome + ", " + sez + "</span>"; }
   function dv(x) { return ' <span class="dv">DA VERIFICARE</span>' + (x ? " " + x : ""); }
   // Nadololo in dialisi: la stessa frase, con la stessa fonte, del Tool QT lungo.
-  var NAD_DIALISI = "In dialisi il nadololo è <b>con riserva</b>: la scheda tecnica dà l'intervallo fra le dosi solo per fasce di clearance e per la dialisi non ne dà uno, dice soltanto che l'emodialisi lo rimuove; nessuna fascia proposta" + st("nadololo", "4.2, 4.9") + dv() + ".";
+  var NAD_DIALISI = "In dialisi la scheda tecnica non dà un intervallo: la tabella va per fasce di clearance (4.2), la 4.4 lo vuole evitato nelle forme gravi, e solo nel sovradosaggio dice che l'emodialisi lo rimuove, con una clearance del nadololo di 40–100 ml/min (4.9)" + st("nadololo", "4.2, 4.4, 4.9") + ". <b>Nessuna dose: decide lo specialista.</b>";
 
   /* ═══ FUNZIONI DI CALCOLO (pure) ══════════════════════════════════════ */
   function creatMg(s) {
@@ -500,19 +516,31 @@ html.js.motore-ko #nomotore{display:block}
   function rene(s) { var c = clearance(s); return { cl:c, crcl:c.clcr, agg:c.agg, egfr:s.egfr, dialisi:s.dialisi }; }
 
   // Nadololo: fasce della scheda tecnica, 0 = >50 · 1 = 31-50 · 2 = 10-30 ·
-  // 3 = <10. Fra 30 e 31 le fasce non si toccano: lo strumento mette (30, 50]
-  // nella seconda e [10, 30] nella terza.
+  // 3 = <10. Fra 30 e 31 le fasce non si toccano: dall'11/11/2026 (scelta del
+  // medico) la 10-30, la piu' prudente, come il Tool Farmaci TSV; prima era la
+  // 31-50. Sempre dall'11/11/2026 le «forme gravi» della 4.4 sono ClCr <30:
+  // sotto 30 le due frasi non si accordano e la dose non c'e' (3 = nessuna
+  // dose); della terza fascia resta [30, 31).
   // In dialisi nessuna fascia: la scheda da' l'intervallo per clearance (4.2) e
-  // per la dialisi non ne da' uno (4.9: l'emodialisi lo rimuove). Lettura
-  // prudente, uguale al Tool QT lungo: con riserva, DA VERIFICARE.
+  // per la dialisi non ne da' uno (4.9: in sovradosaggio l'emodialisi lo
+  // rimuove). Nessuna dose, come nel Tool QT lungo.
   function nadFascia(cl, dialisi) {
     if (dialisi) return null;
     if (cl === null) return null;
     if (cl > SOGLIE.nad[0]) return 0;
-    if (cl > SOGLIE.nad[1]) return 1;
+    if (cl >= SOGLIE.nad[1]) return 1;
     if (cl >= SOGLIE.nad[2]) return 2;
     return 3;
   }
+  // I tre betabloccanti e il rene: ok · ris (nessuna dose, decide lo
+  // specialista) · no (da non dare) · manca (serve la clearance).
+  function bbRene(rn) {
+    var c = rn.crcl, d = rn.dialisi;
+    return { prop:d || (c !== null && c < SOGLIE.irc) ? "ris" : (c === null ? "manca" : "ok"),
+             nad:d || (c !== null && c < SOGLIE.grave) ? "ris" : (c === null ? "manca" : "ok"),
+             meto:d || (c !== null && c < SOGLIE.grave) ? "no" : (c === null ? "manca" : "ok") };
+  }
+  function nessunBb(rn) { return rn.dialisi || (rn.crcl !== null && rn.crcl < SOGLIE.grave); }
   // Flecainide: Tab. 8 «CrCl <35 mL/min/1,73 m2», una clearance con l'unita'
   // dell'eGFR. Lettura prudente, come nel Tool AAD FA: fuori se e' sotto 35
   // l'una o l'altra stima.
@@ -523,12 +551,22 @@ html.js.motore-ko #nomotore{display:block}
     if (rn.crcl === null) return { esito:"manca" };
     return { esito:"ok" };
   }
+  // le soglie del nadololo fra due fasce: 50 (0|1), 31 (1|2), 30 (2|3)
+  function nadSoglie(lo, hi) {
+    var t = [];
+    if (lo <= 0 && hi >= 1) t.push("50");
+    if (lo <= 1 && hi >= 2) t.push("31");
+    if (lo <= 2 && hi >= 3) t.push("30");
+    return t.length > 1 ? t.slice(0, -1).join(", ") + " e " + t[t.length - 1] : t[0];
+  }
   function incroci(rn) {
     var o = [];
     if (rn.crcl === null || rn.agg === null || rn.dialisi) return o;
     if ((rn.crcl < SOGLIE.flec) !== (rn.agg < SOGLIE.flec)) o.push({ f:"flecainide", s:"35" });
     var a = nadFascia(rn.crcl, false), b = nadFascia(rn.agg, false);
-    if (a !== b) o.push({ f:"nadololo", s:String(SOGLIE.nad[Math.min(a, b)]) });
+    if (a !== b) o.push({ f:"nadololo", s:nadSoglie(Math.min(a, b), Math.max(a, b)) });
+    if ((rn.crcl < SOGLIE.irc) !== (rn.agg < SOGLIE.irc)) o.push({ f:"propranololo", s:"60" });
+    if ((rn.crcl < SOGLIE.grave) !== (rn.agg < SOGLIE.grave)) o.push({ f:"metoprololo", s:"30" });
     return o;
   }
 
@@ -686,10 +724,10 @@ html.js.motore-ko #nomotore{display:block}
     var h = "", i, stato = fo.stato, note = fo.note.slice(0), fr = null, idioSint = qd.q === "idio" && s.sint === "si";
     if (k === "flec" && (stato === "ok" || stato === "ris")) {
       fr = flecRene(rn);
-      if (fr.esito === "no") { stato = "no"; note.unshift("<b>Rene</b>: " + (fr.dialisi ? "dialisi" : (fr.cl && fr.eg ? "ClCr " + nf(rn.crcl) + " mL/min ed eGFR " + nf(rn.egfr, 0) : (fr.cl ? "ClCr " + nf(rn.crcl) + " mL/min" : "eGFR " + nf(rn.egfr, 0)))) + ", sotto 35: controindicata" + pgs(T8f) + "."); }
+      if (fr.esito === "no") { stato = "no"; note.unshift("<b>Rene</b>: " + (fr.dialisi ? "dialisi" : (fr.cl && fr.eg ? "ClCr " + nfCl(rn.crcl) + " mL/min ed eGFR " + nf(rn.egfr, 0) : (fr.cl ? "ClCr " + nfCl(rn.crcl) + " mL/min" : "eGFR " + nf(rn.egfr, 0)))) + ", sotto 35: controindicata" + pgs(T8f) + "."); }
     }
-    // in dialisi il nadololo e' con riserva (NAD_DIALISI): la carta del betabloccante lo segue
-    if (k === "bb" && rn.dialisi && stato === "ok") stato = "ris";
+    // sotto 30 e in dialisi nessuno dei tre betabloccanti ha una dose: la carta e' «con riserva»
+    if (k === "bb" && stato === "ok" && nessunBb(rn)) stato = "ris";
     var c = CHIP[stato];
     h += '<div class="esito"><span class="nome">' + NOMI[k] + "</span>" + chip(c[0], c[1]) + (fo.c ? corPill(fo.c, fo.l) + (fo.l ? "" : ' <span class="pg">classe della Tab. 9, senza livello</span>') + pgs(fo.src) : "") + "</div>";
     for (i = 0; i < note.length; i++) h += passo(note[i]);
@@ -712,7 +750,15 @@ html.js.motore-ko #nomotore{display:block}
     if (stato === "ok" || stato === "ris") {
       if (!adulto(s)) h += passo("<b>Dose</b>: le dosi della fonte sono dell'adulto; sotto i 18 anni" + dv("— nessuna fonte del capitolo dà la dose pediatrica") + ".");
       else {
-        if (k === "bb") h += passo("<b>Dose orale</b>: propranololo <b>" + DOSI.prop + "</b>" + pgs(T8a) + " · nadololo <b>" + DOSI.nad + "</b>" + pgs(T8a) + " · metoprololo <b>" + DOSI.meto + "</b>" + pgs(EH11 + ", integrazione: la Tab. 8 scrive «vari»") + ". Il nadololo in Italia è in carenza dal 23/06/2026" + pgs("prontuario del capitolo") + ".", stato === "ok");
+        if (k === "bb") {
+          var br = bbRene(rn), dove = function (sg) { return rn.dialisi ? "dialisi" : "sotto " + sg; };
+          h += passo("<b>Dose orale</b>: propranololo " + (br.prop === "ok" ? "<b>" + DOSI.prop + "</b>" + pgs(T8a) : (br.prop === "manca" ? "—" : "nessuna dose (" + dove(60) + ")")) +
+            " · nadololo " + (br.nad === "ok" ? "<b>" + DOSI.nad + "</b>" + pgs(T8a) : (br.nad === "manca" ? "—" : "nessuna dose (" + dove(30) + ")")) +
+            " · metoprololo " + (br.meto === "ok" ? "<b>" + DOSI.meto + "</b>" + pgs(EH11 + ", integrazione: la Tab. 8 scrive «vari»") : (br.meto === "manca" ? "—" : "da non dare (" + dove(30) + ")")) +
+            (br.prop === "manca" ? ': <span class="muted">serve la clearance (' + cl.manca.join(", ") + "), che decide se la dose c'è</span>" : "") +
+            ". Il nadololo in Italia è in carenza dal 23/06/2026" + pgs("prontuario del capitolo") + ".", stato === "ok");
+          if (nessunBb(rn)) h += passo("<b>" + (rn.dialisi ? "In dialisi" : "A ClCr " + nfCl(rn.crcl) + " mL/min") + " nessuna delle tre molecole ha una dose</b>: metoprololo da non dare sotto 30, propranololo senza dose sotto 60, nadololo nelle forme gravi. Decide lo specialista.");
+        }
         if (k === "ccb") h += passo("<b>Dose orale</b>: verapamil <b>" + DOSI.vera + "</b>" + pgs(T8v) + ". Diltiazem: né la fonte né il prontuario danno una dose per le aritmie ventricolari" + dv() + "; in Italia per os ha solo angina e ipertensione" + st("diltiazem", "4.1") + ".", stato === "ok");
         if (k === "flec") h += passo("<b>Dose orale</b>: <b>" + DOSI.flec + "</b>" + pgs(T8f) + ".", stato === "ok");
         if (k === "amio") h += passo("<b>Dose orale</b>: carico <b>" + DOSI.amioCarico + "</b>, poi <b>" + DOSI.amio + "</b>" + pgs(T8a) + ".", stato === "ok");
@@ -727,25 +773,36 @@ html.js.motore-ko #nomotore{display:block}
   function reneTesto(k, s, rn, cl) {
     if (cl.bambino) return "sotto i 18 anni Cockcroft-Gault non vale e lo strumento non stima la clearance" + dv() + ".";
     if (k === "bb") {
-      var nf_ = nadFascia(rn.crcl, rn.dialisi), tx;
-      tx = "nadololo, intervallo per clearance (la scheda scrive mL/min/1,73 m²): &gt;50 ogni 24 h · 31–50 ogni 24–36 h · 10–30 ogni 24–48 h · &lt;10 ogni 40–60 h; da evitare nelle forme gravi" + st("nadololo", "4.2, 4.4") + dv("che cosa sia «grave»") + ". ";
+      var br = bbRene(rn), nf_ = nadFascia(rn.crcl, rn.dialisi), qui = rn.dialisi ? "" : (rn.crcl !== null ? "ClCr " + nfCl(rn.crcl) + " mL/min" : ""), tx, MANCA = '<span class="muted">— serve la clearance</span>.';
+      tx = "<b>Nadololo</b>: intervallo per clearance (la scheda scrive mL/min/1,73 m²): &gt;50 ogni 24 h · 31–50 ogni 24–36 h · 10–30 ogni 24–48 h · &lt;10 ogni 40–60 h" + st("nadololo", "4.2") + "; ma «evitandone l'impiego nelle forme gravi»" + st("nadololo", "4.4") + ", grave = ClCr &lt;30, lettura nostra. ";
       if (rn.dialisi) tx += NAD_DIALISI + " ";
-      else if (nf_ !== null) tx += "<b>Qui: " + NAD_INT[nf_] + "</b> (ClCr " + nf(rn.crcl) + "). ";
-      else tx += '<span class="muted">— serve la clearance</span>. ';
-      tx += "Propranololo: l'«insufficienza renale» è fra le controindicazioni, senza grado; dose iniziale con cautela" + st("propranololo", "4.2–4.4") + dv("da quale grado vale il divieto") + ". Metoprololo: nessun aggiustamento, ma «insufficienza renale grave» fra le controindicazioni, senza soglia" + st("metoprololo", "4.2–4.3") + dv() + ".";
+      else if (br.nad === "ris") tx += "<b>Qui</b> (" + qui + ", sotto 30) la tabella darebbe " + (rn.crcl >= 10 ? "un intervallo di 24–48 h (10–30)" : "un intervallo di 40–60 h (&lt;10)") + ": le due frasi non si accordano. <b>Nessuna dose: decide lo specialista.</b> ";
+      else if (br.nad === "ok") tx += "<b>Qui: " + NAD_INT[nf_] + "</b> (" + qui + (nf_ === 2 && rn.crcl > SOGLIE.nad[2] ? "; fra 30 e 31 la scheda non ha una fascia: qui la 10–30, la più prudente" : "") + "). ";
+      else tx += MANCA + " ";
+      tx += "<b>Propranololo</b>: «insufficienza renale» fra le controindicazioni (4.3), senza grado: ClCr &lt;60, lettura nostra; la 4.2 e la 4.4 chiedono soltanto attenzione nella dose iniziale: le due frasi non si accordano" + st("propranololo", "4.2, 4.3, 4.4") + ". ";
+      tx += br.prop === "ris" ? "<b>Qui</b> (" + (rn.dialisi ? "dialisi" : qui + ", sotto 60") + "): <b>nessuna dose, decide lo specialista</b>. " : (br.prop === "ok" ? "Qui (" + qui + ") da 60 in su nessuna delle due frasi si applica. " : MANCA + " ");
+      tx += "<b>Metoprololo</b>: «non è necessario alcun aggiustamento» (4.2), ma l'«insufficienza renale grave» è fra le controindicazioni (4.3), senza soglia: grave = ClCr &lt;30, lettura nostra" + st("metoprololo", "4.2, 4.3") + ". ";
+      tx += br.meto === "no" ? "<b>Qui</b> (" + (rn.dialisi ? "dialisi" : qui + ", sotto 30") + "): <b>da non dare</b>." : (br.meto === "ok" ? "Qui (" + qui + ") da 30 in su nessun aggiustamento." : MANCA);
       return tx;
     }
     if (k === "ccb") return "verapamil: cautela, nessun aggiustamento né soglia" + st("verapamil", "4.4") + "; diltiazem: la dose iniziale si riduce, senza soglia di clearance" + st("diltiazem", "4.2") + ".";
     if (k === "flec") {
       var fr = flecRene(rn);
-      return "controindicata con CrCl &lt;35 mL/min/1,73 m²" + pgs(T8f) + "; la scheda tecnica la ammette con ClCr ≤35 da 100 mg/die con i livelli plasmatici" + st("flecainide", "4.2") + ": vale la fonte, più prudente. Lo strumento la esclude se è sotto 35 la Cockcroft-Gault sul peso reale o l'eGFR. " + (fr.esito === "ok" ? "<b>Qui: nessuna esclusione</b> (ClCr " + nf(rn.crcl) + (rn.egfr !== null ? ", eGFR " + nf(rn.egfr, 0) : "") + ")." : (fr.esito === "manca" ? '<span class="muted">— serve la clearance</span>.' : "<b>Qui: esclusa</b>."));
+      return "controindicata con CrCl &lt;35 mL/min/1,73 m²" + pgs(T8f) + "; la scheda tecnica la ammette con ClCr ≤35 da 100 mg/die con i livelli plasmatici" + st("flecainide", "4.2") + ": vale la fonte, più prudente. Lo strumento la esclude se è sotto 35 la Cockcroft-Gault sul peso reale o l'eGFR. " + (fr.esito === "ok" ? "<b>Qui: nessuna esclusione</b> (ClCr " + nfCl(rn.crcl) + (rn.egfr !== null ? ", eGFR " + nf(rn.egfr, 0) : "") + ")." : (fr.esito === "manca" ? '<span class="muted">— serve la clearance</span>.' : "<b>Qui: esclusa</b>."));
     }
     return "nessun aggiustamento: l'escrezione renale è trascurabile" + st("amiodarone", "5.2") + "; la fonte non lo dice.";
   }
   function avvisoAgg(rn, k) {
-    var x = incroci(rn), i, chi = k === "bb" ? "nadololo" : (k === "flec" ? "flecainide" : "");
-    for (i = 0; i < x.length; i++) if (x[i].f === chi) return nota("", "<b>Peso aggiustato</b>: clearance " + nf(rn.agg) + " mL/min, dall'altra parte della soglia di " + x[i].s + (chi === "nadololo" ? ": l'intervallo sarebbe " + NAD_INT[nadFascia(rn.agg, false)] : ": sarebbe esclusa") + ". Decide il peso reale (decisione del medico, 03/10/2026); la scelta resta clinica.");
-    return "";
+    var x = incroci(rn), i, t = [], a;
+    for (i = 0; i < x.length; i++) {
+      if (k === "flec" && x[i].f === "flecainide") t.push("della soglia di 35: sarebbe esclusa");
+      if (k !== "bb") continue;
+      if (x[i].f === "nadololo") { a = nadFascia(rn.agg, false); t.push("della soglia di " + x[i].s + " per il nadololo: " + (a === 3 ? "nessuna dose" : "l'intervallo sarebbe " + NAD_INT[a])); }
+      if (x[i].f === "propranololo") t.push("della soglia di 60 per il propranololo: " + (rn.agg < SOGLIE.irc ? "nessuna dose" : "la dose ci sarebbe"));
+      if (x[i].f === "metoprololo") t.push("della soglia di 30 per il metoprololo: " + (rn.agg < SOGLIE.grave ? "da non dare" : "la dose ci sarebbe"));
+    }
+    if (!t.length) return "";
+    return nota("", "<b>Peso aggiustato</b>: clearance " + nfCl(rn.agg) + " mL/min, dall'altra parte " + t.join("; ") + ". Decide il peso reale (decisione del medico, 03/10/2026); la scelta resta clinica.");
   }
 
   function disegna() {
@@ -765,12 +822,12 @@ html.js.motore-ko #nomotore{display:block}
     /* rene */
     var hr = "", inc = incroci(rn);
     if (cl.clcr !== null) {
-      hr += '<div class="esito"><span class="big">Clearance ' + nf(cl.clcr) + " mL/min</span>" + chip(cl.clcr < 30 ? "k4" : (cl.clcr < 50 ? "k3" : "k1"), "Cockcroft-Gault, peso reale " + nf(s.peso) + " kg") + "</div>";
+      hr += '<div class="esito"><span class="big">Clearance ' + nfCl(cl.clcr) + " mL/min</span>" + chip(cl.clcr < 30 ? "k4" : (cl.clcr < 60 ? "k3" : "k1"), "Cockcroft-Gault, peso reale " + nf(s.peso) + " kg") + "</div>";
       hr += '<div class="muted" style="font-size:12.5px;margin-bottom:4px">Creatinina ' + cl.mg.toFixed(2).replace(".", ",") + " mg/dL = " + nf(cl.umol, 0) + " µmol/L (1 mg/dL = 88,4 µmol/L)" + (cl.bmi !== null ? " · BMI " + nf(cl.bmi) : "") + "</div>";
-      if (cl.agg !== null) hr += '<div class="esito">' + chip("kx", "peso aggiustato " + nf(cl.pesoAgg, 0) + " kg: clearance " + nf(cl.agg)) + '<span class="muted">accanto, non decide (ideale di Devine ' + nf(cl.ibw, 0) + " kg + 0,4 × l'eccesso)</span></div>";
+      if (cl.agg !== null) hr += '<div class="esito">' + chip("kx", "peso aggiustato " + nf(cl.pesoAgg, 0) + " kg: clearance " + nfCl(cl.agg)) + '<span class="muted">accanto, non decide (ideale di Devine ' + nf(cl.ibw, 0) + " kg + 0,4 × l'eccesso)</span></div>";
       if (inc.length) { var tx = []; for (i = 0; i < inc.length; i++) tx.push(inc[i].f + " (soglia " + inc[i].s + ")"); hr += nota("", "<b>Ai lati di una soglia</b>: peso reale e peso aggiustato cadono ai lati opposti per " + tx.join("; ") + ". Decide il peso reale (decisione del medico, 03/10/2026); la scelta resta clinica."); }
     } else hr += '<div class="esito">' + chip("kx", "clearance —") + '<span class="muted">' + (cl.bambino ? cl.manca[0] + ": niente dosi né clearance" : "mancano: " + cl.manca.join(", ")) + "</span></div>";
-    if (rn.dialisi) hr += '<div class="esito">' + chip("k4", "dialisi") + '<span class="muted">esclude la flecainide; nadololo con riserva, senza intervallo (DA VERIFICARE)</span></div>';
+    if (rn.dialisi) hr += '<div class="esito">' + chip("k4", "dialisi") + '<span class="muted">esclude la flecainide e il metoprololo; nadololo e propranololo senza dose: decide lo specialista</span></div>';
     if (s.egfr !== null) hr += '<div class="esito">' + chip(s.egfr < 35 ? "k4" : "k1", "eGFR " + nf(s.egfr, 0)) + '<span class="muted">conta per la soglia di 35 della flecainide, scritta con l\'unità dell\'eGFR</span></div>';
     el("outRene").innerHTML = hr;
 
@@ -851,7 +908,8 @@ html.js.motore-ko #nomotore{display:block}
     lim.push("La soglia del 50% fra FEVS conservata e ridotta non è della ESC 2022, che scrive «lievemente ridotta o ridotta» senza numeri: è il limite della FEVS conservata della linea guida dello scompenso" + pgs(HF26) + ".");
     lim.push("«Età avanzata», «sintomi rilevanti», «disfunzione solo moderata» e «cardiopatia significativa» sono giudizi clinici: la fonte non dà numeri.");
     lim.push("Il carico è quello di un Holter delle 24 h e oscilla di giorno in giorno: vicino al 10% o al 20% conviene ripeterlo" + pgs(P52) + ".");
-    lim.push("Clearance di Cockcroft-Gault sul peso reale, che decide; con BMI ≥30 accanto quella sul peso aggiustato (ideale di Devine + 0,4 × l'eccesso), con un avviso se le due cadono ai lati della soglia di 35 della flecainide o di una fascia del nadololo (decisione del medico, 03/10/2026). Le schede tecniche di flecainide e nadololo scrivono la clearance in mL/min/1,73 m².");
+    lim.push("Clearance di Cockcroft-Gault sul peso reale, che decide; con BMI ≥30 accanto quella sul peso aggiustato (ideale di Devine + 0,4 × l'eccesso), con un avviso se le due cadono ai lati della soglia di 35 della flecainide, di una fascia del nadololo o delle soglie del propranololo (60) e del metoprololo (30) (decisione del medico, 03/10/2026). Le schede tecniche di flecainide e nadololo scrivono la clearance in mL/min/1,73 m².");
+    lim.push("Rene dei betabloccanti senza numero nella scheda tecnica: le «forme gravi» del nadololo e l'«insufficienza renale grave» del metoprololo lette ClCr &lt;30, l'«insufficienza renale» del propranololo letta ClCr &lt;60. Dove due frasi della scheda non si accordano (nadololo sotto 30, propranololo sotto 60) lo strumento non dà la dose: decide lo specialista. Senza la clearance la dose dei tre è «—». Letture nostre, come nel prontuario del capitolo.");
     if (cl.clcr !== null && s.alt === null) lim.push("Altezza non indicata: il BMI non si calcola e manca il confronto col peso aggiustato; nell'obeso la clearance sul peso reale la sovrastima.");
     if (!adulto(s)) lim.push("Sotto i 18 anni lo strumento dà le classi — nei bambini la terapia è simile a quella dell'adulto, ma l'ablazione si rimanda nei più piccoli" + pgs(P50) + " — e non dà dosi né clearance.");
     lim.push("La TV idiopatica sostenuta in fase acuta (betabloccante e.v. nel RVOT, verapamil nella fascicolare, I C, p. 4034) è nel Tool TV. Prima di iniziare flecainide o amiodarone, e per l'ECG di controllo: Tool QT e QRS.");
@@ -863,7 +921,7 @@ html.js.motore-ko #nomotore{display:block}
     bar("barQuadro", q ? QUADRI[q][0] : "kx", q ? QUADRI[q][1] : "—");
     if (q && qd.rmPrima) bar("barPrima", "k2", "prima la risonanza · " + qd.rmClasse[0] + " " + qd.rmClasse[1]);
     else bar("barPrima", cs.prima && !cs.manca ? cs.prima[0] : "kx", cs.prima && !cs.manca ? cs.prima[1] : "—");
-    bar("barRene", rn.dialisi ? "k4" : (rn.crcl !== null ? (rn.crcl < 30 ? "k4" : (rn.crcl < 50 ? "k3" : "k1")) : "kx"), rn.dialisi ? "dialisi" : (rn.crcl !== null ? "ClCr " + nf(rn.crcl, 0) : "—"));
+    bar("barRene", rn.dialisi ? "k4" : (rn.crcl !== null ? (rn.crcl < 30 ? "k4" : (rn.crcl < 60 ? "k3" : "k1")) : "kx"), rn.dialisi ? "dialisi" : (rn.crcl !== null ? "ClCr " + nfCl(rn.crcl, true) : "—"));
   }
 
   document.addEventListener("input", disegna);
@@ -880,7 +938,7 @@ html.js.motore-ko #nomotore{display:block}
     window.scrollTo(0, 0);
   });
 
-  window.EXTRASISTOLI_MOTORE = { clearance:clearance, rene:rene, nadFascia:nadFascia, flecRene:flecRene, incroci:incroci, quadro:quadro, classi:classi, sedeG:sedeG, SOGLIE:SOGLIE };
+  window.EXTRASISTOLI_MOTORE = { clearance:clearance, rene:rene, nadFascia:nadFascia, bbRene:bbRene, nfCl:nfCl, flecRene:flecRene, incroci:incroci, quadro:quadro, classi:classi, sedeG:sedeG, SOGLIE:SOGLIE };
   disegna();
 })();
 </script>
